@@ -49,9 +49,36 @@ All examples use `langchain_core.callbacks.get_usage_metadata_callback` in order
 to track the total tokan usage of a session. This can be used as follows:
 
 ```python
-
 from langchain_core.callbacks import get_usage_metadata_callback
 with get_usage_metadata_callback() as cb:
     # code that uses langchain here
 print(cb.usage_metadata)
+```
+
+For examples that include subsystems which call LLMs, in order to track their
+usage individually you can use
+`langchain_core.callbacks.UsageMetadataCallbackHandler`. Here is how this is
+used in the provided examples:
+
+```python
+from langchain_core.callbacks import UsageMetadataCallbackHandler
+
+class SomeSubsystem:
+    def __init__(self, llm):
+        self.llm = llm
+        self.usage_callback = UsageMetadataCallbackHandler()
+        ...
+
+    def use_llm(self, prompt):
+        messages = ...
+        response = self.llm.invoke(messages,
+                                   config={"callbacks": [self.usage_callback]})
+        ...
+
+    def usage_metadata(self):
+        return self.usage_callback.usage_metadata
+
+
+subsystem = SomeSubsystem(llm)
+print(subsystem.usage_metadata())
 ```
