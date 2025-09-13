@@ -9,7 +9,7 @@ appends the AI response to the history before returning it to the caller.
 
 ```
 $ cd src
-$ python simple_chat.py --provider ollama --model qwen3:8b --temperature 0.3
+$ python -m oop.simple_chat --provider ollama --model qwen3:8b --temperature 0.3
 
 [HumanMessage(content='tell me a joke', additional_kwargs={}, response_metadata={}),
  AIMessage(content="Sure! Here's a joke for you:\n\nWhy don't skeletons fight each other?  \nBecause they don't have the *guts*! 😄", additional_kwargs={}, response_metadata={}),

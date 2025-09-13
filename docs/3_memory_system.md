@@ -10,7 +10,7 @@ extraction part of the system.
 
 ```
 $ cd src
-$ python memory_system.py --provider ollama --model qwen3:8b --temperature 0.3
+$ python -m oop.memory_system --provider ollama --model qwen3:8b --temperature 0.3
 
 Original conversation:
 [SystemMessage(content='You are a helpful assistant.', additional_kwargs={}, response_metadata={}),

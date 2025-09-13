@@ -9,7 +9,7 @@ chat history, and then provide that along with the most recent messages.
 
 ```
 $ cd src
-$ python summarize_history.py --provider ollama --model qwen3:8b --temperature 0.3
+$ python -m oop.summarize_history --provider ollama --model qwen3:8b --temperature 0.3
 
 Full History
 ============

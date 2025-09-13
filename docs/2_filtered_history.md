@@ -12,7 +12,7 @@ but it's fairly straightforward to implement.
 
 ```
 $ cd src
-$ python filtered_history.py --provider ollama --model qwen3:8b --temperature 0.3
+$ python -m oop.filtered_history --provider ollama --model qwen3:8b --temperature 0.3
 
 Full History
 ============
