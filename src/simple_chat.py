@@ -29,10 +29,13 @@ class Chatbot:
 
 def test(llm):
     from pprint import pprint
-    chatbot = Chatbot(llm, 'you are very funny')
-    chatbot.chat('tell me a joke')
-    chatbot.chat('tell me another')
-    pprint(chatbot.messages)
+    from langchain_core.callbacks import get_usage_metadata_callback
+    with get_usage_metadata_callback() as cb:
+        chatbot = Chatbot(llm, 'you are very funny')
+        chatbot.chat('tell me a joke')
+        chatbot.chat('tell me another')
+        pprint(chatbot.messages)
+    print('\ntotal token usage:', cb.usage_metadata)
 
 
 if __name__ == '__main__':

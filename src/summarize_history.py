@@ -1,4 +1,5 @@
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.callbacks import UsageMetadataCallbackHandler
 
 
 class History:
@@ -6,6 +7,7 @@ class History:
                  llm,
                  max_history=2):
         self.llm = llm
+        self.usage_callback = UsageMetadataCallbackHandler()
         self.max_history = max_history
         self.previous = []
         self.current = []
@@ -25,7 +27,8 @@ Provide an updated summary of the key information from the conversation.
 Only include the most important information from both the existing summary
 and the new conversation. Provide only the new summary with no additional text.
 ''')]
-        response = self.llm.invoke(messages)
+        response = self.llm.invoke(messages,
+                                   config={'callbacks': [self.usage_callback]})
         self.summary = response.content
 
     def update(self, new_messages: list[str]):
@@ -49,6 +52,9 @@ conversation:
     def get_full_history(self):
         return self.previous + self.current
 
+    def usage_metadata(self):
+        return self.usage_callback.usage_metadata
+
 
 class Chatbot:
     """Basic conversational chatbot that maintains the conversation history.
@@ -65,6 +71,7 @@ class Chatbot:
                  messages=None,
                  max_history=2):
         self.llm = llm
+        self.usage_callback = UsageMetadataCallbackHandler()
         if messages is None:
             messages = []
         self.history = History(llm, max_history)
@@ -85,10 +92,14 @@ class Chatbot:
         """Maintain the message history and handle calling the llm."""
         messages = self.get_messages()
         messages.append(HumanMessage(prompt))
-        response = self.llm.invoke(messages)
+        response = self.llm.invoke(messages,
+                                   config={'callbacks': [self.usage_callback]})
         content = response.content
         self.history.update([HumanMessage(prompt), AIMessage(content)])
         return content
+
+    def usage_metadata(self):
+        return self.usage_callback.usage_metadata
 
 
 def test_history(llm):
@@ -127,18 +138,24 @@ the water that you pour money into'''),
 
 def test(llm):
     from pprint import pprint
-    chatbot = Chatbot(llm)
-    chatbot.chat('hi!')
-    chatbot.chat('how are you?')
-    chatbot.chat("I'm fine too.")
-    chatbot.chat('how can I square a circle?')
-    chatbot.chat('can you give me an example?')
-    print('Full History')
-    print('============')
-    pprint(chatbot.get_full_history())
-    print('\nFiltered History')
-    print('================')
-    pprint(chatbot.get_messages())
+    from langchain_core.callbacks import get_usage_metadata_callback
+    with get_usage_metadata_callback() as cb:
+        chatbot = Chatbot(llm)
+        chatbot.chat('hi!')
+        chatbot.chat('how are you?')
+        chatbot.chat("I'm fine too.")
+        chatbot.chat('how can I square a circle?')
+        chatbot.chat('can you give me an example?')
+        print('Full History')
+        print('============')
+        pprint(chatbot.get_full_history())
+        print('\nFiltered History')
+        print('================')
+        pprint(chatbot.get_messages())
+
+    print('\nhistory system token usage:', chatbot.history.usage_metadata())
+    print('chat token usage:', chatbot.usage_metadata())
+    print('\ntotal token usage:', cb.usage_metadata)
 
 
 if __name__ == '__main__':
