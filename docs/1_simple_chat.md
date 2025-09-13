@@ -15,4 +15,6 @@ $ python simple_chat.py --provider ollama --model qwen3:8b --temperature 0.3
  AIMessage(content="Sure! Here's a joke for you:\n\nWhy don't skeletons fight each other?  \nBecause they don't have the *guts*! 😄", additional_kwargs={}, response_metadata={}),
  HumanMessage(content='tell me another', additional_kwargs={}, response_metadata={}),
  AIMessage(content="Of course! Here's another one:\n\nWhy did the scarecrow win an award?  \nBecause he was outstanding in his field! 🌾😄", additional_kwargs={}, response_metadata={})]
+
+total token usage: {'qwen3:8b': {'output_tokens': 63, 'total_tokens': 147, 'input_tokens': 84}}
 ```

@@ -44,17 +44,20 @@ class Chatbot:
 
 def test(llm):
     from pprint import pprint
-    chatbot = Chatbot(llm)
-    chatbot.chat('hi!')
-    chatbot.chat('how are you?')
-    chatbot.chat("I'm fine too.")
-    chatbot.chat('how can I square a circle?')
-    print('Full History')
-    print('============')
-    pprint(chatbot.get_messages())
-    print('\nFiltered History')
-    print('================')
-    pprint(chatbot.get_messages(True))
+    from langchain_core.callbacks import get_usage_metadata_callback
+    with get_usage_metadata_callback() as cb:
+        chatbot = Chatbot(llm)
+        chatbot.chat('hi!')
+        chatbot.chat('how are you?')
+        chatbot.chat("I'm fine too.")
+        chatbot.chat('how can I square a circle?')
+        print('Full History')
+        print('============')
+        pprint(chatbot.get_messages())
+        print('\nFiltered History')
+        print('================')
+        pprint(chatbot.get_messages(True))
+    print('\ntotal token usage:', cb.usage_metadata)
 
 
 if __name__ == '__main__':

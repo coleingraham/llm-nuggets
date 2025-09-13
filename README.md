@@ -42,3 +42,16 @@ whatever requirements for your particular model first).
 * [Filtering Chat History](docs/2_filtered_history.md): sending only a specified number of messages per request
 * [Simplistic ChatGPT Style Memory System Clone](docs/3_memory_system.md): using a LLM to extract memorable facts from user messages for use in future conversations
 * [Chat History Summarization](docs/4_summarize_history.md): creates a running summary of older messages to reduce context
+
+## Token Usage
+
+All examples use `langchain_core.callbacks.get_usage_metadata_callback` in order
+to track the total tokan usage of a session. This can be used as follows:
+
+```python
+
+from langchain_core.callbacks import get_usage_metadata_callback
+with get_usage_metadata_callback() as cb:
+    # code that uses langchain here
+print(cb.usage_metadata)
+```

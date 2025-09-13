@@ -1,5 +1,6 @@
 import json
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.callbacks import UsageMetadataCallbackHandler
 
 from utils import get_json_from_response
 
@@ -8,6 +9,7 @@ class MemoryExtractor:
     def __init__(self, llm, memories):
         self.llm = llm
         self.memories = memories
+        self.usage_callback = UsageMetadataCallbackHandler()
 
     def extract_memories(self, prompt):
         messages = [
@@ -32,11 +34,16 @@ only output the JSON object in a markdown block.
             HumanMessage(prompt)
         ]
 
-        completion = self.llm.invoke(messages)
+        completion = self.llm.invoke(messages,
+                                     config={"callbacks":
+                                             [self.usage_callback]})
 
         response = get_json_from_response(completion.content)
         # store memories for later
         self.memories.extend(response['memory'])
+
+    def usage_metadata(self):
+        return self.usage_callback.usage_metadata
 
 
 class Chatbot:
@@ -57,6 +64,7 @@ class Chatbot:
                  should_filter=False,
                  max_history=2):
         self.llm = llm
+        self.usage_callback = UsageMetadataCallbackHandler()
         self.max_history = max_history
         self.should_filter = should_filter
         if messages is None:
@@ -88,31 +96,45 @@ class Chatbot:
         """Maintain the message history and handle calling the llm."""
         self.memory_extractor.extract_memories(prompt)
         self.messages.append(HumanMessage(prompt))
-        response = self.llm.invoke(self.get_messages(self.should_filter))
+        response = self.llm.invoke(self.get_messages(self.should_filter),
+                                   config={'callbacks': [self.usage_callback]})
         content = response.content
         self.messages.append(AIMessage(content))
         return content
 
+    def usage_metadata(self):
+        return self.usage_callback.usage_metadata
+
 
 def test(llm):
     from pprint import pprint
-    chatbot = Chatbot(llm)
-    chatbot.chat('what is my favorite animal?')
-    chatbot.chat('I love cats!')
-    print('Original conversation:')
-    pprint(chatbot.get_messages())
-    print('Memories:')
-    memories = chatbot.get_memories()
-    print(memories)
-    chatbot = Chatbot(llm,
-                      'Do not say "based on your previous messages"',
-                      memories=memories)
-    chatbot.chat('what is my favorite animal?')
-    print('\nSecond conversation:')
-    pprint(chatbot.get_messages())
-    print('Memories:')
-    memories = chatbot.get_memories()
-    print(memories)
+    from langchain_core.callbacks import get_usage_metadata_callback
+    with get_usage_metadata_callback() as cb:
+        chatbot = Chatbot(llm)
+        chatbot.chat('what is my favorite animal?')
+        chatbot.chat('I love cats!')
+        print('Original conversation:')
+        pprint(chatbot.get_messages())
+        print('Memories:')
+        memories = chatbot.get_memories()
+        print(memories)
+        print('\nmemory system token usage:',
+              chatbot.memory_extractor.usage_metadata())
+        print('chat token usage:', chatbot.usage_metadata())
+
+        chatbot = Chatbot(llm,
+                          'Do not say "based on your previous messages"',
+                          memories=memories)
+        chatbot.chat('what is my favorite animal?')
+        print('\nSecond conversation:')
+        pprint(chatbot.get_messages())
+        print('Memories:')
+        memories = chatbot.get_memories()
+        print(memories)
+        print('\nmemory system token usage:',
+              chatbot.memory_extractor.usage_metadata())
+        print('chat token usage:', chatbot.usage_metadata())
+    print('\ntotal token usage:', cb.usage_metadata)
 
 
 if __name__ == '__main__':
