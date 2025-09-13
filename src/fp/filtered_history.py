@@ -5,58 +5,58 @@ from langchain_core.messages import (
         BaseMessage,
         HumanMessage,
         SystemMessage)
-from pydantic import BaseModel
 
 
-class History(BaseModel):
-    system_prompt: Optional[SystemMessage] = None
-    messages: List[BaseMessage] = []
-    max_history: int = 2
-
-    def append(self, message):
-        self.messages.append(message)
-
-    def get_messages(self, should_filter=False):
-        messages = self.messages
-        if should_filter:
-            messages = messages[-self.max_history:]
-        if self.system_prompt is not None:
-            return [self.system_prompt] + messages
-        else:
-            return messages
+def get_messages(messages: List[BaseMessage] = [],
+                 system_prompt: Optional[SystemMessage] = None,
+                 max_history: int = 2,
+                 should_filter: bool = False,
+                 **kwargs) -> List[BaseMessage]:
+    if should_filter:
+        messages = messages[-max_history:]
+    if system_prompt is not None:
+        return [system_prompt] + messages
+    else:
+        return messages
 
 
-def chat(llm,
-         history: History,
-         prompt: str,
-         should_filter: bool = True) -> History:
-    """Maintain the message history and handle calling the llm."""
-    history = history.model_copy()
-    history.append(HumanMessage(prompt))
-    response = llm.invoke(history.get_messages(should_filter))
-    content = response.content
-    history.append(AIMessage(content))
-    return history
+def chat(prompt: str,
+         llm,
+         messages: List[BaseMessage],
+         **kwargs) -> List[BaseMessage]:
+    messages = messages.copy()
+    messages.append(HumanMessage(prompt))
+    response = llm.invoke(get_messages(messages, **kwargs))
+    messages.append(AIMessage(response.content))
+    return messages
 
 
 def test(llm):
     from pprint import pprint
     from langchain_core.callbacks import get_usage_metadata_callback
 
-    history = History(
-            system_prompt=SystemMessage('you are a helpful assistant'))
+    state = {
+            'llm': llm,
+            'system_prompt': SystemMessage('you are a helpful assistant'),
+            'max_history': 2,
+            'should_filter': True,
+            'messages': []
+            }
 
     with get_usage_metadata_callback() as cb:
-        history = chat(llm, history, 'hi!')
-        history = chat(llm, history, 'how are you?')
-        history = chat(llm, history, "I'm fine too.")
-        history = chat(llm, history, 'how can I square a circle?')
+        state['messages'] = chat('hi!', **state)
+        state['messages'] = chat('how are you?', **state)
+        state['messages'] = chat("I'm fine too.", **state)
+        state['messages'] = chat('how can I square a circle?', **state)
+
         print('Full History')
         print('============')
-        pprint(history.get_messages())
+        pprint(get_messages(messages=state['messages'],
+                            system_prompt=state['system_prompt']))
         print('\nFiltered History')
         print('================')
-        pprint(history.get_messages(True))
+        pprint(get_messages(**state))
+
     print('\ntotal token usage:', cb.usage_metadata)
 
 
