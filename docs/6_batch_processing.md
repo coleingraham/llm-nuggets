@@ -19,6 +19,7 @@ $ python batch_processing.py --provider ollama --model qwen3:8b --temperature 0.
 [{'input': 'I love programming.', 'output': 'positive'},
  {'input': "I don't like how humid it is", 'output': 'negative'},
  {'input': 'how are you?', 'output': 'neutral'}]
+Took 0.8950 seconds
 
 total token usage: {'qwen3:8b': {'total_tokens': 178, 'input_tokens': 172, 'output_tokens': 6}}
 
@@ -26,6 +27,7 @@ total token usage: {'qwen3:8b': {'total_tokens': 178, 'input_tokens': 172, 'outp
 [{'input': 'I love programming.', 'output': 'positive'},
  {'input': "I don't like how humid it is", 'output': 'negative'},
  {'input': 'how are you?', 'output': 'neutral'}]
+Took 0.5434 seconds
 
 total token usage: {'qwen3:8b': {'input_tokens': 85, 'output_tokens': 6, 'total_tokens': 91}}
 ```

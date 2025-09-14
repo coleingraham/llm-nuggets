@@ -1,3 +1,4 @@
+from time import time
 from typing import List
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -32,19 +33,23 @@ def test(llm):
 
     print('=== Multiple Requests ===')
     with get_usage_metadata_callback() as cb:
+        start_time = time()
         results = []
         for text in texts:
             results.append({'input': text,
                             'output': sentiment_analysis(llm, text)})
         pprint(results)
+        print(f'Took {time() - start_time:.4f} seconds')
 
     print('\ntotal token usage:', cb.usage_metadata)
     print('')
     print('=== Batched Request ===')
     with get_usage_metadata_callback() as cb:
+        start_time = time()
         results = [{'input': t, 'output': s}
                    for t, s in zip(texts, batch_sentiment_analysis(llm, texts))]
         pprint(results)
+        print(f'Took {time() - start_time:.4f} seconds')
     print('\ntotal token usage:', cb.usage_metadata)
 
 
