@@ -42,6 +42,9 @@ whatever requirements for your particular model first).
 * [Filtering Chat History](docs/2_filtered_history.md): sending only a specified number of messages per request
 * [Simplistic ChatGPT Style Memory System Clone](docs/3_memory_system.md): using a LLM to extract memorable facts from user messages for use in future conversations
 * [Chat History Summarization](docs/4_summarize_history.md): creates a running summary of older messages to reduce context
+* [Software Development Team](docs/5_dev_team.md): demonstrates prompt chaining and multi-agent debate to simulate a software development team
+* [Batch Processing](docs/6_batch_processing.md): compares the token usage between multiple individual vs. batched requests
+* [Input Routing](docs/7_input_routing.md): using few-shot prompting to extract one or more inputs to downstream systems from user input
 
 ## Token Usage
 
