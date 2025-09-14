@@ -1,5 +1,11 @@
+import os
 import json
+import logging
 import re
+
+
+logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO'))
+LOG = logging.getLogger()
 
 
 def get_markdown_block_from_response(response, what=''):
